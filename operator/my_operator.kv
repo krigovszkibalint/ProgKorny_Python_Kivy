@@ -25,6 +25,7 @@
             bold: True
             rgba: (1,1,1, 1)
         FlatButton:
+            size_hint_x: .1
             id: Loggedin_user
             text: 'kdpeq8'
             rgba: (1,1,1, 1)
@@ -44,7 +45,7 @@
             background_color: (.35,.35,.85, 1)
             size_hint_x: .4
         Button:
-            id: current_products
+            id: current_product
             text: 'Default Product'
             background_normal: ''
             background_color: (.4,.4,.85, 1)
@@ -161,4 +162,16 @@
             TextInput:
                 id: receipt_preview
                 readonly: True
-                text: 'Business Name\n66 Main St\nCity \nTel: 06-90-123-4567 \nReceipt No: \nDate: \n\n'
+                text: 'Business Name\n66 ABC St\nCity \nTel: 06-90-123-4567 \nReceipt No: \nDate: \n\n'
+    BoxLayout:
+        id: footer
+        size_hint_y: None
+        height: 30
+        canvas.before:
+            Color:
+                rgba: (.3,.3,.8, 1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            text: 'Krigovszki Bálint KDPEQ8'
