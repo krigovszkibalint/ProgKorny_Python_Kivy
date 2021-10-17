@@ -26,6 +26,19 @@ class OperatorWindow(BoxLayout):
             details.add_widget(discount)
             details.add_widget(price)
             details.add_widget(total)
+
+            #Update Preview
+            p_name = 'Product One'
+            p_price = 1.00
+            preview = self.ids.receipt_preview
+            prev_text = preview.text
+            _prev = prev_text.find('`')
+            if _prev > 0:
+                prev_text = prev_text[:_prev]
+            purchase_total = '`\n\nTotal\t\t\t\t\t\t\t\t0.00'
+            nu_preview = '\n'.join([prev_text,p_name+'\t\t\t\t'+str(p_price),purchase_total])
+            preview.text = nu_preview
+
 class My_OperatorApp(App):
     def build(self):
         return OperatorWindow()
