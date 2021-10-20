@@ -20,6 +20,7 @@ class SignInWindow(BoxLayout):
                 info.text = '[color=#00BB00]Logged in successfully![/color]'
             else:
                 info.text = '[color=#DD0000]Invalid username / password![/color]'
+                
 class SignInApp(App):
     def build(self):
         return SignInWindow()

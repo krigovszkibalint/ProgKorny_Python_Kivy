@@ -15,6 +15,7 @@ class OperatorWindow(BoxLayout):
     def update_purchases(self):
         p_code = self.ids.product_code_input.text
         products_container = self.ids.products
+
         if p_code == '1234' or p_code == '2345':
             details = BoxLayout(size_hint_y = None,height = 30, pos_hint = {'top': 1})
             products_container.add_widget(details)
@@ -35,8 +36,10 @@ class OperatorWindow(BoxLayout):
 
             #Update Preview
             p_name = 'Product One'
+
             if p_code == '2345':
                 p_name = 'Product Two'
+
             p_price = 1.00
             p_qty = str(1)
             self.total += p_price
@@ -46,9 +49,12 @@ class OperatorWindow(BoxLayout):
             preview = self.ids.receipt_preview
             prev_text = preview.text
             _prev = prev_text.find('`')
+
             if _prev > 0:
                 prev_text = prev_text[:_prev]
+
             p_target = -1
+            
             for i,c in enumerate(self.cart):
                 if c == p_code:
                     p_target = i
