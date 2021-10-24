@@ -50,7 +50,7 @@
         id: content_nav
         BoxLayout:
             id: nav_tabs
-            size_hint_x: .2
+            size_hint_x: .15
             orientation: 'vertical'
             canvas.before:
                 Color:
@@ -66,22 +66,40 @@
                 state: 'down'
                 background_color: (.35,.35,.85, 1)
                 background_normal: ''
+                group: 'admin_navs'
+                on_state: root.change_screen(self)
             ToggleButton:
                 id: products_toggle
                 text: 'Manage Products'
                 size_hint_y: .1
                 background_color: (.4,.4,.85, 1)
                 background_normal: ''
+                group: 'admin_navs'
+                on_state: root.change_screen(self)
             ToggleButton:
                 id: analysis_toggle
                 text: 'Product Analysis'
                 size_hint_y: .1
                 background_color: (.45,.45,.85, 1)
                 background_normal: ''
+                group: 'admin_navs'
+                on_state: root.change_screen(self)
             Label:
                 id: sp
                 text: ''
                 size_hint_y: .7
         BoxLayout:
-            id: content
-            size_hint_x: .8
+            id: all_content
+            size_hint_x: .85
+            padding: (20,10)
+            ScreenManager:
+                id: screen_manager
+                Screen:
+                    id: screen_content
+                    name: 'screen_content'
+                Screen:
+                    id: screen_product_content
+                    name: 'screen_product_content'
+                Screen:
+                    id: screen_analysis
+                    name: 'screen_analysis'
