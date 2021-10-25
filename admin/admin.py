@@ -1,17 +1,27 @@
+from typing import Text
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+from kivy.uix.spinner import Spinner
 
 from collections import OrderedDict
 from pymongo import MongoClient
 from utils.datatable import DataTable
+from datetime import datetime
+import hashlib
 
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        client = MongoClient()
+        db = client.db_progkorny
+        self.users = db.users
+        self.products = db.stocks
 
 #        print(self.get_products())
 
-        content = self.ids.screen_content
+        content = self.ids.screen_contents
         users = self.get_users()
         userstable = DataTable(table=users)
         content.add_widget(userstable)
@@ -21,6 +31,109 @@ class AdminWindow(BoxLayout):
         products = self.get_products()
         product_table = DataTable(table=products)
         product_screen.add_widget(product_table)
+
+    def add_user_fields(self):
+        target = self.ids.operation_fields
+        target.clear_widgets()
+        crud_first = TextInput(hint_text='First Name')
+        crud_last = TextInput(hint_text='Last Name')
+        crud_user = TextInput(hint_text='Username')
+        crud_pwd = TextInput(hint_text='Password')
+        crud_des = Spinner(text='Operator',values=['Operator','Administrator'])
+        crud_submit = Button(text='Add',size_hint_x=None,width=100,on_release=lambda x: 
+            self.add_user(
+                crud_first.text,
+                crud_last.text,
+                crud_user.text,
+                crud_pwd.text,
+                crud_des.text))
+
+        target.add_widget(crud_first)
+        target.add_widget(crud_last)
+        target.add_widget(crud_user)
+        target.add_widget(crud_pwd)
+        target.add_widget(crud_des)
+        target.add_widget(crud_submit)
+
+    def add_user(self, first,last,user,pwd,des):
+        content = self.ids.screen_contents
+        content.clear_widgets()
+
+        self.users.insert_one({
+            'first_name':first,
+            'last_name':last,
+            'user_name':user,
+            'password':pwd,
+            'designation':des,
+            'date':datetime.now()})
+
+        users = self.get_users()
+        userstable = DataTable(table=users)
+        content.add_widget(userstable)
+
+    def update_user_fields(self):
+        target = self.ids.operation_fields
+        target.clear_widgets()
+        crud_first = TextInput(hint_text='First Name')
+        crud_last = TextInput(hint_text='Last Name')
+        crud_user = TextInput(hint_text='Username')
+        crud_pwd = TextInput(hint_text='Password')
+        crud_des = Spinner(text='Operator',values=['Operator','Administrator'])
+        crud_submit = Button(text='Update',size_hint_x=None,width=100,on_release=lambda x: 
+            self.update_user(
+                crud_first.text,
+                crud_last.text,
+                crud_user.text,
+                crud_pwd.text,
+                crud_des.text))
+
+        target.add_widget(crud_first)
+        target.add_widget(crud_last)
+        target.add_widget(crud_user)
+        target.add_widget(crud_pwd)
+        target.add_widget(crud_des)
+        target.add_widget(crud_submit)
+    
+    def update_user(self, first,last,user,pwd,des):
+        content = self.ids.screen_contents
+        content.clear_widgets()
+        pwd = hashlib.sha256(pwd.encode()).hexdigest()
+        
+        self.users.update_one(
+            {'user_name':user},
+            {'$set':
+            {'first_name':first,
+            'last_name':last,
+            'user_name':user,
+            'password':pwd,
+            'designation':des,
+            'date':datetime.now()
+            }})
+
+        users = self.get_users()
+        userstable = DataTable(table=users)
+        content.add_widget(userstable)
+
+    def remove_user_fields(self):
+        target = self.ids.operation_fields
+        target.clear_widgets()
+        crud_user = TextInput(hint_text='Username')
+
+        crud_submit = Button(text='Remove',size_hint_x=None,width=100,on_release=lambda x: self.remove_user(crud_user.text))
+        
+        target.add_widget(crud_user)
+        target.add_widget(crud_submit)
+    
+    def remove_user(self,user):
+        content = self.ids.screen_contents
+        content.clear_widgets()
+
+        self.users.remove({'user_name':user})
+
+        users = self.get_users()
+        userstable = DataTable(table=users)
+        content.add_widget(userstable)
+
 
     def get_users(self):
         client = MongoClient()
