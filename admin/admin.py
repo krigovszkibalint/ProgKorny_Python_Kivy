@@ -10,6 +10,10 @@ from pymongo import MongoClient
 from utils.datatable import DataTable
 from datetime import datetime
 import hashlib
+import pandas as pd
+import matplotlib.pyplot as plt
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as FCK
+
 
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
@@ -19,7 +23,20 @@ class AdminWindow(BoxLayout):
         self.users = db.users
         self.products = db.stocks
 
-#        print(self.get_products())
+        product_code = []
+        product_name = []
+        spinnervalues = []
+        for product in self.products.find():
+            product_code.append(product['product_code'])
+            name = product['product_name']
+            if len(name) > 30:
+                name = name[:30] + '...'
+            product_name.append(name)
+
+        for x in range (len(product_code)):
+            line = ' | '.join([product_code[x],product_name[x]])
+            spinnervalues.append(line)
+        self.ids.target_product.values = spinnervalues
 
         content = self.ids.screen_contents
         users = self.get_users()
@@ -352,6 +369,28 @@ class AdminWindow(BoxLayout):
 
         return _stocks
     
+    def view_stats(self):
+        plt.cla()
+        self.ids.analysis_result.clear_widgets()
+        target_product = self.ids.target_product.text
+        target = target_product[:target_product.find(' | ')]
+        name = target_product[target_product.find(' | '):]
+
+        df = pd.read_csv('products_purchase.csv')
+        purchases = []
+        dates = []
+        count = 0
+        for x in range (len(df)):
+            if str(df.Product_Code[x]) == target:
+                purchases.append(df.Purchased[x])
+                dates.append(count)
+                count+=1
+        plt.bar(dates,purchases,color='#7373c8',label=name)
+        plt.ylabel('Total Purchase')
+        plt.xlabel('day')
+
+        self.ids.analysis_result.add_widget(FCK(plt.gcf()))
+
     def change_screen(self, instance):
         if instance.text == 'Manage Products':
             self.ids.screen_manager.current = 'screen_product_content'
