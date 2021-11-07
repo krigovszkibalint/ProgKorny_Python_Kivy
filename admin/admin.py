@@ -17,12 +17,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as FCK
 
-class Notify(ModalView):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.size_hint = (.3,.15)
-
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -113,9 +107,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_submit)
 
     def add_user(self, first,last,user,pwd,des):
-        content = self.ids.screen_contents
-        content.clear_widgets()
-
+        pwd = hashlib.sha256(pwd.encode()).hexdigest()
         if first == '' or last == '' or user == '' or pwd == '':
             self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
             self.notify.open()
@@ -129,17 +121,18 @@ class AdminWindow(BoxLayout):
                 'designation':des,
                 'date':datetime.now()})
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+            content = self.ids.screen_contents
+            content.clear_widgets()
+
+            users = self.get_users()
+            userstable = DataTable(table=users)
+            content.add_widget(userstable)
     
     def killswitch(self,dtx):
         self.notify.dismiss()
         self.notify.clear_widgets()
 
     def add_product(self,code,name,weight,stock,sold,order,purchase):
-        content = self.ids.screen_product_contents
-        content.clear_widgets()
         if code == '' or name == '' or weight == '' or order == '':
             self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
             self.notify.open()
@@ -153,10 +146,13 @@ class AdminWindow(BoxLayout):
                 'sold':sold,
                 'order':order,
                 'last_purchase':purchase})
+
+            content = self.ids.screen_product_contents
+            content.clear_widgets()
         
-        products = self.get_products()
-        stocktable = DataTable(table=products)
-        content.add_widget(stocktable)
+            products = self.get_products()
+            stocktable = DataTable(table=products)
+            content.add_widget(stocktable)
         
     def update_user_fields(self):
         target = self.ids.operation_fields
@@ -213,44 +209,88 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_submit)
     
     def update_user(self, first,last,user,pwd,des):
-        content = self.ids.screen_contents
-        content.clear_widgets()
         pwd = hashlib.sha256(pwd.encode()).hexdigest()
-        
-        self.users.update_one(
-            {'user_name':user},
-            {'$set':
-            {'first_name':first,
-            'last_name':last,
-            'user_name':user,
-            'password':pwd,
-            'designation':des,
-            'date':datetime.now()
-            }})
+        if user == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            target_user = self.users.find_one({'user_name':user})
+            if target_user == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Username[/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,1)
+            else:
+                if first == '':
+                    first = target_user['first_name']
+                if last == '':
+                    last = target_user['last_name']
+                if pwd == '':
+                    pwd = target_user['password']
+                if des == '':
+                    des = target_user['designation']
+                
+                content = self.ids.screen_contents
+                content.clear_widgets()
+                
+                self.users.update_one(
+                    {'user_name':user},
+                    {'$set':
+                    {'first_name':first,
+                    'last_name':last,
+                    'user_name':user,
+                    'password':pwd,
+                    'designation':des,
+                    'date':datetime.now()
+                    }})
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+                users = self.get_users()
+                userstable = DataTable(table=users)
+                content.add_widget(userstable)
 
     def update_product(self,code,name,weight,stock,sold,order,purchase):
-        content = self.ids.screen_product_contents
-        content.clear_widgets()
+        if code == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]Product Code Required![/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,2)
+        else:
+            target_code = self.products.find_one({'product_code':code})
+            if target_code == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Product Code![/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,2)
+            else:
+                if name == '':
+                    name = target_code['product_name']
+                if weight == '':
+                    weight = target_code['product_weight']
+                if stock == '':
+                    stock = target_code['in_stock']
+                if sold == '':
+                    sold = target_code['sold']
+                if order == '':
+                    order = target_code['order']
+                if purchase == '':
+                    purchase = target_code['last_purchase']
 
-        self.products.update_one(
-            {'product_code':code},
-            {'$set':
-            {'product_code':code,
-            'product_name':name,
-            'product_weight':weight,
-            'in_stock':stock,
-            'sold':sold,
-            'order':order,
-            'last_purchase':purchase
-            }})
+                content = self.ids.screen_product_contents
+                content.clear_widgets()
 
-        products = self.get_products()
-        stocktable = DataTable(table=products)
-        content.add_widget(stocktable)
+                self.products.update_one(
+                    {'product_code':code},
+                    {'$set':
+                    {'product_code':code,
+                    'product_name':name,
+                    'product_weight':weight,
+                    'in_stock':stock,
+                    'sold':sold,
+                    'order':order,
+                    'last_purchase':purchase
+                    }})
+
+                products = self.get_products()
+                stocktable = DataTable(table=products)
+                content.add_widget(stocktable)
 
     def remove_user_fields(self):
         target = self.ids.operation_fields
@@ -273,24 +313,46 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_submit)
     
     def remove_user(self,user):
-        content = self.ids.screen_contents
-        content.clear_widgets()
+        if user == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,2)
+        else:
+            target_user = self.users.find_one({'user_name':user})
+            if target_user == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Username![/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,2)
+            else:
+                content = self.ids.screen_contents
+                content.clear_widgets()
 
-        self.users.remove({'user_name':user})
+                self.users.remove({'user_name':user})
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+                users = self.get_users()
+                userstable = DataTable(table=users)
+                content.add_widget(userstable)
 
     def remove_product(self,code):
-        content = self.ids.screen_product_contents
-        content.clear_widgets()
+        if code == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,2)
+        else:
+            target_code = self.products.find_one({'product_code':code})
+            if target_code == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Product Code![/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,2)
+            else:
+                content = self.ids.screen_product_contents
+                content.clear_widgets()
 
-        self.products.remove({'product_code':code})
+                self.products.remove({'product_code':code})
 
-        products = self.get_products()
-        stocktable = DataTable(table=products)
-        content.add_widget(stocktable)
+                products = self.get_products()
+                stocktable = DataTable(table=products)
+                content.add_widget(stocktable)
 
 
     def get_users(self):
@@ -420,6 +482,12 @@ class AdminWindow(BoxLayout):
             self.ids.screen_manager.current = 'screen_content'
         else:
             self.ids.screen_manager.current = 'screen_analysis'
+
+class Notify(ModalView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.size_hint = (.3,.15)
 
 class AdminApp(App):
     def build(self):
