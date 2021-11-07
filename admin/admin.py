@@ -3,7 +3,10 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
+from kivy.clock import Clock
+from kivy.uix.modalview import ModalView
 
 from collections import OrderedDict
 from pymongo import MongoClient
@@ -14,6 +17,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as FCK
 
+class Notify(ModalView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.size_hint = (.3,.15)
 
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
@@ -22,6 +30,7 @@ class AdminWindow(BoxLayout):
         db = client.db_progkorny
         self.users = db.users
         self.products = db.stocks
+        self.notify = Notify()
 
         product_code = []
         product_name = []
@@ -107,30 +116,43 @@ class AdminWindow(BoxLayout):
         content = self.ids.screen_contents
         content.clear_widgets()
 
-        self.users.insert_one({
-            'first_name':first,
-            'last_name':last,
-            'user_name':user,
-            'password':pwd,
-            'designation':des,
-            'date':datetime.now()})
+        if first == '' or last == '' or user == '' or pwd == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,2)
+        else:
+            self.users.insert_one({
+                'first_name':first,
+                'last_name':last,
+                'user_name':user,
+                'password':pwd,
+                'designation':des,
+                'date':datetime.now()})
 
         users = self.get_users()
         userstable = DataTable(table=users)
         content.add_widget(userstable)
+    
+    def killswitch(self,dtx):
+        self.notify.dismiss()
+        self.notify.clear_widgets()
 
     def add_product(self,code,name,weight,stock,sold,order,purchase):
         content = self.ids.screen_product_contents
         content.clear_widgets()
-
-        self.products.insert_one({
-            'product_code':code,
-            'product_name':name,
-            'product_weight':weight,
-            'in_stock':stock,
-            'sold':sold,
-            'order':order,
-            'last_purchase':purchase})
+        if code == '' or name == '' or weight == '' or order == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All fields are required![/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,2)
+        else:
+            self.products.insert_one({
+                'product_code':code,
+                'product_name':name,
+                'product_weight':weight,
+                'in_stock':stock,
+                'sold':sold,
+                'order':order,
+                'last_purchase':purchase})
         
         products = self.get_products()
         stocktable = DataTable(table=products)
