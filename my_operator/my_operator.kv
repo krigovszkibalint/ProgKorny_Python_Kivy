@@ -26,9 +26,10 @@
             rgba: (1,1,1, 1)
         FlatButton:
             size_hint_x: .1
-            id: Loggedin_user
+            id: loggedin_user
             text: 'kdpeq8'
             rgba: (1,1,1, 1)
+            on_release: root.logout()
     BoxLayout:
         id: current
         size_hint_y: None
@@ -90,9 +91,9 @@
                 FlatButton:
                     text: 'Price'
                     size_hint_x: .1
-                FlatButton:
-                    text: 'Product Total'
-                    size_hint_x: .2
+                #FlatButton:
+                    #text: 'Product Total'
+                    #size_hint_x: .2
             BoxLayout:
                 id: product_inputs
                 size_hint_y: None
@@ -118,9 +119,9 @@
                 TextInput:
                     id: price_input
                     size_hint_x: .1
-                TextInput:
-                    id: product_total_input
-                    size_hint_x: .2
+                #TextInput:
+                    #id: product_total_input
+                    #size_hint_x: .2
             BoxLayout:
                 id: add_to_cart
                 orientation: 'vertical'
@@ -144,21 +145,23 @@
                         size_hint_x: .1
                     Label:
                         text: 'Discount'
-                        size_hint_x: .1
+                        size_hint_x: .2
                     Label:
                         text: 'Price'
-                        size_hint_x: .1
-                    Label:
-                        text: 'Product Total'
                         size_hint_x: .2
-                GridLayout:
-                    id: products
-                    cols: 1
+                    #Label:
+                       # text: 'Product Total'
+                       # size_hint_x: .2
+                ScrollView:
+                    size: self.size
+                    GridLayout:
+                        size_hint_y: None
+                        id: products
+                        cols: 1
         BoxLayout:
             id: preview
             orientation: 'vertical'
-            size_hint_x: .2    
-            
+            size_hint_x: .2
             TextInput:
                 id: receipt_preview
                 readonly: True

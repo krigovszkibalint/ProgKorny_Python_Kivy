@@ -1,3 +1,5 @@
+#: import Window kivy.core.window.Window
+
 <FlatButton@ButtonBehavior+Label>:
     text: 'default'
 
@@ -21,17 +23,26 @@
                 size: self.size
                 pos: self.pos
         FlatButton:
+            refresh: file_dropdown.__self__
             id: file_trigger
-            text: 'File'
+            text: 'Menu'
             on_release: file_dropdown.open(self)
             size_hint: (.1,None)
             height: 30
-
             Widget:
                 on_parent: file_dropdown.dismiss()
-
                 DropDown:
                     id: file_dropdown
+                    Button:
+                        id: close
+                        text: 'Log out'
+                        color: (.2,.2,.4, 1)
+                        size_hint_y: None
+                        height: 30
+                        background_color: (1,1,1, 1)
+                        background_normal: ''
+                        on_release: root.logout()
+                        on_release: file_dropdown.dismiss()
                     Button:
                         id: close
                         text: 'Quit'
@@ -40,7 +51,7 @@
                         height: 30
                         background_color: (1,1,1, 1)
                         background_normal: ''
-
+                        on_release: Window.close()
         Label:
             text: 'Admin Dashboard'
             bold: True

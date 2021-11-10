@@ -7,6 +7,7 @@ from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.clock import Clock
 from kivy.uix.modalview import ModalView
+from kivy.lang import Builder
 
 from collections import OrderedDict
 from pymongo import MongoClient
@@ -16,6 +17,8 @@ import hashlib
 import pandas as pd
 import matplotlib.pyplot as plt
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as FCK
+
+Builder.load_file('admin/admin.kv')
 
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
@@ -120,7 +123,6 @@ class AdminWindow(BoxLayout):
                 'password':pwd,
                 'designation':des,
                 'date':datetime.now()})
-
             content = self.ids.screen_contents
             content.clear_widgets()
 
@@ -213,13 +215,13 @@ class AdminWindow(BoxLayout):
         if user == '':
             self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
-            Clock.schedule_once(self.killswitch,1)
+            Clock.schedule_once(self.killswitch,2)
         else:
             target_user = self.users.find_one({'user_name':user})
             if target_user == None:
                 self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Username[/b][/color]',markup=True))
                 self.notify.open()
-                Clock.schedule_once(self.killswitch,1)
+                Clock.schedule_once(self.killswitch,2)
             else:
                 if first == '':
                     first = target_user['first_name']
@@ -291,6 +293,9 @@ class AdminWindow(BoxLayout):
                 products = self.get_products()
                 stocktable = DataTable(table=products)
                 content.add_widget(stocktable)
+
+    def logout(self):
+        self.parent.parent.current = 'screen_signin'
 
     def remove_user_fields(self):
         target = self.ids.operation_fields
